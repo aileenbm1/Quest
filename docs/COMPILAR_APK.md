@@ -55,10 +55,6 @@ No se requiere ninguna. Para compilar en CI con EAS, define `EXPO_TOKEN` (token 
 
 GitHub Actions (`.github/workflows/apk.yml`) compila la APK en cada push a `main`, la deja como *artifact* y la publica en la release `latest` del repositorio. No requiere secretos.
 
-Link directo a la APK más reciente:
-
-`https://github.com/aileenbm1/Quest/releases/latest/download/oieg-quest.apk`
-
-La carpeta `site/` es una página estática con el botón de descarga y las instrucciones; se publica en Cloudflare con `wrangler.jsonc` (solo assets, sin Worker ni R2). Si cambias el nombre del repositorio, actualiza el link en `site/index.html`.
+El botón de `site/index.html` apunta a `/descargar`. Un Worker pequeño (`cloudflare/worker.ts`, configurado en `wrangler.jsonc`) baja la APK de la release `latest` y la entrega como descarga desde tu propio dominio, así que quien entra nunca sale de tu página. No usa R2 ni secretos. Requiere que el repositorio sea público. Si cambias el nombre del repositorio, actualiza `APK_SOURCE` en el Worker.
 
 La APK de este flujo se firma con la llave de depuración de la plantilla de Expo: sirve para instalarla directamente, no para Google Play.
