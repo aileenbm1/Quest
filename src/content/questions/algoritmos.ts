@@ -252,17 +252,16 @@ export const ALGORITMOS: Question[] = [
     lessonId: 'l-alg-2',
     category: 'algoritmos',
     difficulty: 4,
-    type: 'abierta',
+    type: 'numerica',
     prompt:
-      'Escribe un algoritmo con pasos numerados que decida si un número entero positivo n es par, usando solo restas y comparaciones (sin dividir).',
-    answer: {
-      kind: 'reference',
-      solution:
-        '1. Leer n.\n2. Mientras n ≥ 2: n ← n − 2.\n3. Si n = 0, mostrar «par».\n4. Si no (n = 1), mostrar «impar».\n\nIdea: restar 2 repetidamente no cambia si el número es par o impar; al final solo queda 0 (par) o 1 (impar).',
+      'Este algoritmo decide si un número es par usando solo restas. Con n = 11, ¿cuántas veces se ejecuta la instrucción «n ← n − 2»?',
+    data: {
+      code: ['1. n ← 11', '2. Mientras n ≥ 2:', '      n ← n − 2', '3. Si n = 0: mostrar «par»', '   Si no: mostrar «impar»'],
     },
+    answer: { kind: 'number', value: 5 },
     explanation:
-      'Hay varias respuestas correctas. Lo importante es que: (1) reste de 2 en 2 con un ciclo, (2) se detenga, y (3) decida con lo que queda (0 o 1).',
-    hints: ['¿Qué pasa con un número par si le restas 2 muchas veces?', '¿Cuándo debe detenerse el ciclo?'],
-    estimatedSeconds: 240,
+      'n baja así: 11 → 9 → 7 → 5 → 3 → 1. Son 5 restas. Cuando n llega a 1 (que ya no es ≥ 2) el ciclo termina y, como n no es 0, muestra «impar». Restar 2 no cambia si un número es par o impar, y por eso este algoritmo funciona.',
+    hints: ['Escribe cómo cambia n después de cada resta.', 'El ciclo se detiene cuando n deja de ser mayor o igual que 2.'],
+    estimatedSeconds: 90,
   }),
 ];

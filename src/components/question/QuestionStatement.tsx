@@ -1,8 +1,12 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
+import { getVisual } from '@/content/visuals';
 import { CATEGORY_LABELS, LEVEL_NAMES, QUESTION_TYPE_LABELS, type Question } from '@/core/types';
 import { palette, radius } from '@/theme/colors';
 import { useTheme } from '@/theme/ThemeProvider';
+import { Mascot } from '../Mascot';
 import { Tag } from '../ui';
+import { VisualView } from '../visuals/VisualView';
 
 export function SourceTags({ question }: { question: Question }) {
   return (
@@ -21,6 +25,7 @@ export function SourceTags({ question }: { question: Question }) {
 export function QuestionStatement({ question, showMeta = true }: { question: Question; showMeta?: boolean }) {
   const { colors } = useTheme();
   const d = question.data;
+  const visual = getVisual(question.id);
   return (
     <View style={styles.wrap}>
       {showMeta ? (
@@ -39,65 +44,91 @@ export function QuestionStatement({ question, showMeta = true }: { question: Que
         </View>
       ) : null}
       {d?.code ? <CodeBlock lines={d.code} /> : null}
+      {visual ? <VisualView visual={visual} /> : null}
       {d?.grid ? <GridView rows={d.grid} legend={d.gridLegend} /> : null}
     </View>
   );
 }
 
 export function CodeBlock({ lines }: { lines: string[] }) {
+  const { colors } = useTheme();
+  const usesArrow = lines.some((l) => l.includes('←'));
   return (
-    <View style={styles.code} accessible accessibilityLabel={`Algoritmo: ${lines.join('. ')}`}>
-      {lines.map((line, i) => (
-        <Text key={i} style={styles.codeText}>
-          {line}
+    <View style={{ gap: 6 }}>
+      <View style={styles.code} accessible accessibilityLabel={`Algoritmo: ${lines.join('. ')}`}>
+        {lines.map((line, i) => (
+          <Text key={i} style={styles.codeText}>
+            {line}
+          </Text>
+        ))}
+      </View>
+      {usesArrow ? (
+        <Text style={[styles.legend, { color: colors.textMuted, marginTop: 0, textAlign: 'left' }]}>
+          La flecha ← significa «guardar»: «x ← 3» guarda el 3 en x. «x ← x + 1» toma lo que hay en x, le suma 1 y lo vuelve a guardar.
         </Text>
-      ))}
+      ) : null}
     </View>
   );
 }
 
-const CELL_STYLE: Record<string, { bg: string; fg: string }> = {
-  '#': { bg: '#334155', fg: '#334155' },
-  R: { bg: palette.violet, fg: '#FFFFFF' },
-  S: { bg: palette.violet, fg: '#FFFFFF' },
-  M: { bg: '#16A34A', fg: '#FFFFFF' },
-};
-
 export function GridView({ rows, legend }: { rows: string[]; legend?: string }) {
   const { colors } = useTheme();
   const cols = Math.max(...rows.map((r) => r.length));
-  const size = Math.min(44, Math.floor(300 / Math.max(cols, 1)));
+  const size = Math.min(48, Math.floor(300 / Math.max(cols, 1)));
   return (
     <View style={styles.gridWrap} accessible accessibilityLabel={`Cuadrícula de ${rows.length} filas por ${cols} columnas. ${legend ?? ''}`}>
       {rows.map((row, r) => (
         <View key={r} style={styles.gridRow}>
-          {row.split('').map((ch, c) => {
-            const special = CELL_STYLE[ch];
-            const isLetter = /[A-Z]/.test(ch) && !special;
-            return (
-              <View
-                key={c}
-                style={[
-                  styles.cell,
-                  {
-                    width: size,
-                    height: size,
-                    borderColor: colors.border,
-                    backgroundColor: special?.bg ?? (isLetter ? palette.cyan : colors.surface),
-                  },
-                ]}
-              >
-                {ch !== '.' && ch !== '#' ? (
-                  <Text style={{ color: special?.fg ?? palette.night, fontWeight: '800', fontSize: size * 0.42 }}>{ch}</Text>
-                ) : null}
-              </View>
-            );
-          })}
+          {row.split('').map((ch, c) => (
+            <GridCell key={c} ch={ch} size={size} borderColor={colors.border} floor={colors.surface} />
+          ))}
         </View>
       ))}
       {legend ? <Text style={[styles.legend, { color: colors.textMuted }]}>{legend}</Text> : null}
     </View>
   );
+}
+
+/** Una casilla: pared, robot, salida, meta o letra de destino; si no, piso vacío. */
+function GridCell({ ch, size, borderColor, floor }: { ch: string; size: number; borderColor: string; floor: string }) {
+  const base = { width: size, height: size, borderColor };
+  if (ch === '#') {
+    return (
+      <View style={[styles.cell, base, { backgroundColor: '#334155' }]}>
+        <View style={[styles.brick, { width: size * 0.7 }]} />
+        <View style={[styles.brick, { width: size * 0.7 }]} />
+      </View>
+    );
+  }
+  if (ch === 'R') {
+    return (
+      <View style={[styles.cell, base, { backgroundColor: floor }]}>
+        <Mascot size={size * 0.85} animated={false} />
+      </View>
+    );
+  }
+  if (ch === 'M') {
+    return (
+      <View style={[styles.cell, base, { backgroundColor: '#DCFCE7' }]}>
+        <Ionicons name="flag" size={size * 0.62} color="#15803D" />
+      </View>
+    );
+  }
+  if (ch === 'S') {
+    return (
+      <View style={[styles.cell, base, { backgroundColor: '#EDE9FE' }]}>
+        <Ionicons name="navigate-circle" size={size * 0.68} color={palette.violet} />
+      </View>
+    );
+  }
+  if (/[A-Z]/.test(ch)) {
+    return (
+      <View style={[styles.cell, base, { backgroundColor: palette.cyan }]}>
+        <Text style={{ color: palette.night, fontWeight: '800', fontSize: size * 0.46 }}>{ch}</Text>
+      </View>
+    );
+  }
+  return <View style={[styles.cell, base, { backgroundColor: floor }]} />;
 }
 
 const styles = StyleSheet.create({
@@ -110,6 +141,7 @@ const styles = StyleSheet.create({
   codeText: { color: '#E2E8F0', fontFamily: 'monospace', fontSize: 15, lineHeight: 22 },
   gridWrap: { alignItems: 'center', gap: 0 },
   gridRow: { flexDirection: 'row' },
-  cell: { borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  cell: { borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 3 },
+  brick: { height: 4, borderRadius: 2, backgroundColor: '#64748B' },
   legend: { fontSize: 13, marginTop: 8, textAlign: 'center' },
 });

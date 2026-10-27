@@ -1,6 +1,8 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { MascotTip } from '@/components/Mascot';
+import { VisualView } from '@/components/visuals/VisualView';
+import { getVisual } from '@/content/visuals';
 import { Body, Button, Card, ErrorNotice, Loading, Screen, SectionTitle, Tag } from '@/components/ui';
 import { LEVEL_NAMES } from '@/core/types';
 import { useDb } from '@/db/DatabaseProvider';
@@ -42,6 +44,7 @@ export default function LeccionScreen() {
       <Card>
         <SectionTitle>Ejemplo resuelto</SectionTitle>
         <Body style={{ fontWeight: '700' }}>{l.exampleProblem}</Body>
+        {getVisual(l.id) ? <VisualView visual={getVisual(l.id)!} /> : null}
         {l.exampleSolution.map((s, i) => (
           <View key={i} style={styles.step}>
             <View style={[styles.stepNum, { backgroundColor: colors.primary }]}>

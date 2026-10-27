@@ -44,7 +44,8 @@ describe('banco de contenido', () => {
     const spec = q.answer;
     if (spec.kind === 'choice') expect(q.options?.some((o) => o.key === spec.correct)).toBe(true);
     if (spec.kind === 'order') expect([...spec.order].sort()).toEqual(q.options?.map((o) => o.key).sort());
-    if (q.type === 'abierta') expect(spec.kind).toBe('reference');
+    // Pregunta abierta: sin opciones; como en el examen, solo se califica la respuesta final.
+    if (q.type === 'abierta') expect(q.options).toBeUndefined();
 
     // La respuesta canónica debe pasar su propia validación.
     const canonical = canonicalResponse(spec);

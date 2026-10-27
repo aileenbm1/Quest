@@ -148,20 +148,16 @@ export const DEPURACION: Question[] = [
     lessonId: 'l-dep-2',
     category: 'depuracion',
     difficulty: 4,
-    type: 'abierta',
+    type: 'numerica',
     prompt:
-      'Este algoritmo debería encontrar el número menor de una lista de números positivos, pero tiene un error. Explica cuál es y cómo corregirlo.',
+      'Este algoritmo debería encontrar el número menor de una lista de números positivos, pero tiene un error. Con la lista 5, 8, 3, ¿qué número muestra?',
     data: {
       code: ['1. menor ← 0', '2. Para cada número x de la lista:', '3.    Si x < menor: menor ← x', '4. mostrar menor'],
     },
-    answer: {
-      kind: 'reference',
-      solution:
-        'El error está en el paso 1: «menor» empieza en 0. Como todos los números son positivos, ninguno es menor que 0 y siempre se muestra 0 (por ejemplo, con 5, 8, 3 muestra 0 en lugar de 3).\nCorrección: empezar con «menor ← primer número de la lista».',
-    },
+    answer: { kind: 'number', value: 0 },
     explanation:
-      'Prueba con una lista pequeña, como 5, 8, 3: el algoritmo muestra 0, que ni siquiera está en la lista. El valor inicial debe salir de la propia lista.',
-    hints: ['Prueba el algoritmo con la lista 5, 8, 3.', '¿Algún número positivo es menor que 0?'],
-    estimatedSeconds: 180,
+      'El error está en el paso 1: «menor» empieza en 0. Como todos los números son positivos, ninguno es menor que 0 y el algoritmo siempre muestra 0, que ni siquiera está en la lista (debería mostrar 3). Se corrige empezando con «menor ← primer número de la lista».',
+    hints: ['Haz una tabla con x y menor en cada vuelta.', '¿Algún número positivo es menor que 0?'],
+    estimatedSeconds: 90,
   }),
 ];

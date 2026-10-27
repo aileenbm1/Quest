@@ -130,16 +130,12 @@ export const MIXTOS: Question[] = [
     difficulty: 5,
     type: 'abierta',
     prompt:
-      'Tienes una jarra de 3 litros y otra de 5 litros, sin marcas, y una llave de agua. Explica paso a paso cómo obtener exactamente 4 litros.',
-    answer: {
-      kind: 'reference',
-      solution:
-        '1. Llena la jarra de 5 L.\n2. Vierte de la de 5 L en la de 3 L hasta llenarla: quedan 2 L en la de 5 L.\n3. Vacía la jarra de 3 L.\n4. Pasa los 2 L a la jarra de 3 L.\n5. Llena otra vez la jarra de 5 L.\n6. Vierte en la de 3 L hasta llenarla (solo cabe 1 L): quedan 4 L en la jarra de 5 L.',
-    },
+      'Tienes una jarra de 3 litros y otra de 5 litros, sin marcas, y una llave de agua. Un movimiento es llenar una jarra, vaciarla, o verter una en la otra hasta que la que recibe se llene o la que da quede vacía. ¿Cuál es el menor número de movimientos para tener exactamente 4 litros en una de las jarras?',
+    answer: { kind: 'number', value: 6 },
     explanation:
-      'Hay otras soluciones correctas. Para revisar la tuya, anota cuántos litros hay en cada jarra después de cada paso y comprueba que nunca superas su capacidad.',
-    hints: ['Si llenas la de 5 y la viertes en la de 3, ¿cuánto queda?', '¿Cómo podrías medir 1 litro?'],
-    estimatedSeconds: 240,
+      '1) Llena la de 5 L. 2) Viértela en la de 3 L: en la de 5 quedan 2 L. 3) Vacía la de 3 L. 4) Pasa los 2 L a la de 3 L. 5) Llena otra vez la de 5 L. 6) Viértela en la de 3 L, donde solo cabe 1 L más: en la de 5 L quedan 4 L. Son 6 movimientos. Empezando por llenar la de 3 L se necesitan 8.',
+    hints: ['Si llenas la de 5 y la viertes en la de 3, ¿cuánto queda en la de 5?', '¿Cómo podrías medir 1 litro?'],
+    estimatedSeconds: 150,
   }),
   original({
     id: 'mix-10',

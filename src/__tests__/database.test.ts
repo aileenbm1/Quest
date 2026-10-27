@@ -31,6 +31,7 @@ import { getAllQuestions, getContentStatus, getQuestionsByIds } from '@/db/quest
 import { BUNDLED_CONTENT, seedContent } from '@/db/seed';
 import { getSetting, setSetting } from '@/db/settings';
 import { seededRandom } from '@/core/exam';
+import { importOfficialQuestion } from '@/content/official/importer';
 import { openNodeDb, type TestDb } from '../../test-utils/nodeDb';
 
 const NOW = new Date('2026-10-27T15:00:00');
@@ -213,7 +214,25 @@ describe('intentos, repaso y recomendaciones', () => {
 describe('simulador de examen', () => {
   it('guarda respuestas, finaliza y califica con desglose por categoría', async () => {
     const db = await freshDb();
-    const questions = await getQuestionsByIds(db, ['pat-01', 'log-01', 'mix-09', 'mat-06']);
+    // Pregunta oficial sin solución publicada: queda «pendiente» y no se califica.
+    const pending = importOfficialQuestion(
+      {
+      id: 'ofi-prueba-01',
+      moduleId: 'm6-simulador',
+      category: 'mixtos',
+      difficulty: 3,
+      type: 'abierta',
+      prompt: 'Pregunta oficial de prueba sin solución publicada.',
+      source: 'https://www.cimat.mx/oieg/2025-2026/?target=examenes-pasados',
+      examLabel: 'Examen de prueba',
+      reviewedBy: 'Equipo de contenido',
+      reviewedAt: '2026-10-27',
+      answerVerified: false,
+      },
+      ['m6-simulador'],
+    );
+    await seedContent(db, { ...BUNDLED_CONTENT, questions: [...BUNDLED_CONTENT.questions, pending] }, { force: true });
+    const questions = await getQuestionsByIds(db, ['pat-01', 'log-01', 'ofi-prueba-01', 'mat-06']);
     const id = await createExamSession(db, 'corto', questions, 20 * 60, NOW);
     await saveExamAnswer(db, id, 0, '10', NOW); // correcta
     await saveExamAnswer(db, id, 1, 'f', NOW); // incorrecta
