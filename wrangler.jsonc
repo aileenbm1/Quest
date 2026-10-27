@@ -1,13 +1,14 @@
 {
-  // Worker que publica la página de descarga de la APK.
+  // PWA de OIEG Quest: Expo exporta la app web a dist/ y Cloudflare la publica como sitio estático.
   // El nombre debe coincidir con el del proyecto creado en Cloudflare.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "quest",
-  "main": "cloudflare/worker.ts",
   "compatibility_date": "2026-10-01",
+  "build": {
+    "command": "npx expo export --platform web"
+  },
   "assets": {
-    "directory": "./site",
-    "binding": "ASSETS",
-    "run_worker_first": ["/descargar", "/oieg-quest.apk"]
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
   }
 }

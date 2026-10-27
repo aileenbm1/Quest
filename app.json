@@ -36,7 +36,13 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png",
+      "name": "OIEG Quest",
+      "shortName": "OIEG Quest",
+      "themeColor": "#111827",
+      "backgroundColor": "#111827"
     },
     "plugins": [
       "expo-router",

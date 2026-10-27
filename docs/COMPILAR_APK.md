@@ -51,10 +51,14 @@ o bien `npx eas-cli@latest build -p android --profile preview --local`.
 
 No se requiere ninguna. Para compilar en CI con EAS, define `EXPO_TOKEN` (token personal de Expo) como secreto del CI.
 
-## Descarga directa con un link
+## App web instalable (PWA)
 
-GitHub Actions (`.github/workflows/apk.yml`) compila la APK en cada push a `main`, la deja como *artifact* y la publica en la release `latest` del repositorio. No requiere secretos.
+La misma app se publica como página web instalable, sin descargar archivos: se abre en el navegador y se instala desde ahí.
 
-El botón de `site/index.html` apunta a `/descargar`. Un Worker pequeño (`cloudflare/worker.ts`, configurado en `wrangler.jsonc`) baja la APK de la release `latest` y la entrega como descarga desde tu propio dominio, así que quien entra nunca sale de tu página. No usa R2 ni secretos. Requiere que el repositorio sea público. Si cambias el nombre del repositorio, actualiza `APK_SOURCE` en el Worker.
+- `npm run build:web` exporta la app a `dist/` (`expo export --platform web`). `wrangler.jsonc` ya ejecuta ese comando antes de cada deploy y publica `dist/` en Cloudflare como sitio estático.
+- `public/` aporta lo necesario para la PWA: `manifest.webmanifest`, íconos, `sw.js` (para abrir sin internet), `index.html` (plantilla) y `_headers`.
+- `public/_headers` envía `Cross-Origin-Opener-Policy: same-origin` y `Cross-Origin-Embedder-Policy: credentialless`. Son obligatorios: SQLite en web (`expo-sqlite`) los necesita para funcionar.
+- En el teléfono: abre la dirección del sitio en Chrome → menú ⋮ → **Instalar app** / **Añadir a la pantalla de inicio**. Se abre en pantalla completa y funciona sin internet. En iPhone: Safari → Compartir → **Añadir a pantalla de inicio**.
+- El progreso se guarda en el almacenamiento del navegador de ese dispositivo (SQLite en web). Borrar los datos del sitio borra el progreso.
 
 La APK de este flujo se firma con la llave de depuración de la plantilla de Expo: sirve para instalarla directamente, no para Google Play.
