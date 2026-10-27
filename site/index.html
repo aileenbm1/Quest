@@ -32,7 +32,7 @@
       <img src="/icon.png" alt="Bit, el robot explorador de OIEG Quest">
       <h1>OIEG Quest</h1>
       <p class="motto">Entrena tu mente. Supera el reto.</p>
-      <a class="btn" href="/descargar" download>⬇ Descargar para Android</a>
+      <a class="btn" href="https://github.com/aileenbm1/Quest/releases/latest/download/oieg-quest.apk" download>⬇ Descargar para Android</a>
       <p class="info" id="info">Archivo APK · funciona sin internet</p>
     </section>
 
@@ -62,14 +62,5 @@
 
     <p class="muted">OIEG Quest es una herramienta independiente de práctica. No está avalada por el CIMAT, la Universidad de Guanajuato ni la Olimpiada de Informática del Estado de Guanajuato.</p>
   </main>
-  <script>
-    fetch('/apk-info').then(function (r) { return r.json(); }).then(function (d) {
-      var el = document.getElementById('info');
-      if (!d.available) { el.textContent = 'La APK se está preparando. Vuelve en unos minutos.'; return; }
-      var mb = (d.sizeBytes / 1048576).toFixed(1);
-      var date = new Date(d.uploaded).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
-      el.textContent = 'Versión ' + (d.version || '') + ' · ' + mb + ' MB · actualizada el ' + date;
-    }).catch(function () {});
-  </script>
 </body>
 </html>

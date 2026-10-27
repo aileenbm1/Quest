@@ -51,21 +51,14 @@ o bien `npx eas-cli@latest build -p android --profile preview --local`.
 
 No se requiere ninguna. Para compilar en CI con EAS, define `EXPO_TOKEN` (token personal de Expo) como secreto del CI.
 
-## Descarga directa con un link (Cloudflare)
+## Descarga directa con un link
 
-GitHub Actions (`.github/workflows/apk.yml`) compila la APK en cada push a `main` y la deja como *artifact* descargable en la pestaña Actions. No usa ningún secreto de Cloudflare: la APK se sube a mano a R2 y el Worker `quest` (`wrangler.jsonc`, `cloudflare/worker.ts`) la sirve en:
+GitHub Actions (`.github/workflows/apk.yml`) compila la APK en cada push a `main`, la deja como *artifact* y la publica en la release `latest` del repositorio. No requiere secretos.
 
-- `https://<tu-dominio>/` página de descarga con instrucciones
-- `https://<tu-dominio>/descargar` descarga directa del `.apk`
-- `https://<tu-dominio>/apk-info` versión, tamaño y fecha en JSON
+Link directo a la APK más reciente:
 
-Configuración (una sola vez): en Cloudflare, **R2 → Create bucket** con el nombre exacto `oieg-quest-apk`. Sin el bucket, el deploy del Worker falla.
+`https://github.com/aileenbm1/Quest/releases/latest/download/oieg-quest.apk`
 
-Para publicar una versión nueva:
-
-1. Descarga el artifact `oieg-quest-apk` de la ejecución en GitHub Actions y descomprímelo.
-2. En Cloudflare, **R2 → oieg-quest-apk → Upload**, sube `oieg-quest.apk` (y opcionalmente `apk-info.json`, con `{"version":"…","commit":"…"}`), reemplazando los anteriores.
-
-Hasta que subas `oieg-quest.apk`, `/descargar` responde 404 con un aviso.
+La carpeta `site/` es una página estática con el botón de descarga y las instrucciones; se publica en Cloudflare con `wrangler.jsonc` (solo assets, sin Worker ni R2). Si cambias el nombre del repositorio, actualiza el link en `site/index.html`.
 
 La APK de este flujo se firma con la llave de depuración de la plantilla de Expo: sirve para instalarla directamente, no para Google Play.

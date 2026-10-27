@@ -1,19 +1,10 @@
 {
-  // Worker que publica la página de descarga de la APK.
+  // Sitio estático con la página de descarga de la APK.
   // El nombre debe coincidir con el del proyecto creado en Cloudflare.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "quest",
-  "main": "cloudflare/worker.ts",
   "compatibility_date": "2026-10-01",
   "assets": {
-    "directory": "./site",
-    "binding": "ASSETS",
-    "run_worker_first": ["/descargar", "/oieg-quest.apk", "/apk-info"]
-  },
-  "r2_buckets": [
-    {
-      "binding": "APK_BUCKET",
-      "bucket_name": "oieg-quest-apk"
-    }
-  ]
+    "directory": "./site"
+  }
 }
