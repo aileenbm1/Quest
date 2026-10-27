@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Body, Button, Card } from '@/components/ui';
-import { describeCycle, generateRhythm, isCorrectTap, MAX_RHYTHM_LEVEL, PADS, padName, type Pad } from '@/games/ritmo';
+import { describeCycle, generateRhythm, isCorrectTap, MAX_RHYTHM_LEVEL, PADS, padName, RHYTHM_TRIES, type Pad } from '@/games/ritmo';
 import { mulberry32 } from '@/games/rng';
 import { roundsFor, type GameProps } from '@/games/types';
 import { radius } from '@/theme/colors';
@@ -32,6 +32,8 @@ function Round({ level, rng, isLast, onDone }: { level: number; rng: () => numbe
   const [lit, setLit] = useState<number | null>(null);
   const [replays, setReplays] = useState(0);
   const [tapped, setTapped] = useState<number[]>([]);
+  const [triesLeft, setTriesLeft] = useState(RHYTHM_TRIES);
+  const [missed, setMissed] = useState(false);
 
   // Reproduce el ritmo: cada color se enciende en orden. Al terminar es el turno del estudiante.
   useEffect(() => {
@@ -47,6 +49,7 @@ function Round({ level, rng, isLast, onDone }: { level: number; rng: () => numbe
 
   const replay = () => {
     setTapped([]);
+    setMissed(false);
     setReplays((n) => n + 1);
     setPhase('viendo');
   };
@@ -54,10 +57,19 @@ function Round({ level, rng, isLast, onDone }: { level: number; rng: () => numbe
   const tap = (pad: Pad) => {
     if (phase !== 'tu_turno') return;
     if (!isCorrectTap(rhythm.expected, tapped.length, pad.id)) {
-      setTapped([...tapped, pad.id]);
-      setPhase('fallo');
+      const left = triesLeft - 1;
+      setTriesLeft(left);
+      if (left <= 0) {
+        setTapped([...tapped, pad.id]);
+        setPhase('fallo');
+        return;
+      }
+      // Otra oportunidad: se borra lo tocado y el patrón sigue oculto.
+      setTapped([]);
+      setMissed(true);
       return;
     }
+    setMissed(false);
     const next = [...tapped, pad.id];
     setTapped(next);
     if (next.length === rhythm.expected.length) setPhase('acierto');
@@ -72,19 +84,28 @@ function Round({ level, rng, isLast, onDone }: { level: number; rng: () => numbe
           {phase === 'viendo' ? 'Mira el ritmo…' : phase === 'tu_turno' ? 'Ahora continúalo' : 'Así sigue el patrón'}
         </Text>
         <Body muted>Hay un patrón que se repite. Descúbrelo y toca lo que sigue.</Body>
+        {!finished ? (
+          <Text style={[styles.tries, { color: missed ? colors.danger : colors.textMuted }]} accessibilityLiveRegion="polite">
+            {missed
+              ? `Ese no era. Te ${triesLeft === 1 ? 'queda 1 oportunidad' : `quedan ${triesLeft} oportunidades`}: empieza de nuevo.`
+              : `Oportunidades: ${triesLeft} de ${RHYTHM_TRIES}`}
+          </Text>
+        ) : null}
         <View style={styles.sequence}>
-          {rhythm.shown.map((id, i) => (
-            <Chip key={`s${i}`} pad={PADS[id]!} />
-          ))}
+          {/* El patrón no se dibuja mientras se juega: solo se ve en los botones que se encienden. */}
+          {finished ? rhythm.shown.map((id, i) => <Chip key={`s${i}`} pad={PADS[id]!} />) : null}
           {rhythm.expected.map((id, i) => {
             const entered = tapped[i];
-            return entered === undefined ? (
-              <View key={`e${i}`} style={[styles.chip, styles.empty, { borderColor: colors.textMuted }]} accessibilityLabel="Falta">
-                <Text style={{ color: colors.textMuted, fontWeight: '800' }}>?</Text>
-              </View>
-            ) : (
-              <Chip key={`e${i}`} pad={PADS[entered]!} wrong={entered !== id} />
-            );
+            if (entered === undefined) {
+              return finished ? (
+                <Chip key={`e${i}`} pad={PADS[id]!} />
+              ) : (
+                <View key={`e${i}`} style={[styles.chip, styles.empty, { borderColor: colors.textMuted }]} accessibilityLabel="Falta">
+                  <Text style={{ color: colors.textMuted, fontWeight: '800' }}>?</Text>
+                </View>
+              );
+            }
+            return <Chip key={`e${i}`} pad={PADS[entered]!} wrong={entered !== id} />;
           })}
         </View>
       </Card>
@@ -143,6 +164,7 @@ const styles = StyleSheet.create({
   sequence: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chip: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   empty: { borderWidth: 2, borderStyle: 'dashed' },
+  tries: { fontSize: 14, fontWeight: '700' },
   pads: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center' },
   pad: { width: '47%', height: 104, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center', gap: 4 },
   padLit: { transform: [{ scale: 1.06 }], borderWidth: 4, borderColor: '#FFFFFF' },

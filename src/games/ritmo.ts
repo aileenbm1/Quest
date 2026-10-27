@@ -27,6 +27,9 @@ export interface Rhythm {
 
 export const MAX_RHYTHM_LEVEL = 5;
 
+/** Oportunidades por ronda. El patrón dibujado solo se revela al terminar la ronda. */
+export const RHYTHM_TRIES = 3;
+
 const LEVELS: Record<number, { cycle: number; repeats: number; extra: number; ask: number }> = {
   1: { cycle: 2, repeats: 3, extra: 0, ask: 3 },
   2: { cycle: 3, repeats: 2, extra: 0, ask: 3 },
