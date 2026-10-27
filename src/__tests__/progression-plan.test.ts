@@ -41,7 +41,14 @@ describe('plan de preparación', () => {
     expect(kinds).toContain('repaso');
     const light = plan.find((p) => p.kind === 'repaso_ligero');
     expect(light?.day).toBe(addDays(FIRST_STAGE_START, -1));
-    expect(plan.filter((p) => p.kind === 'evento').map((p) => p.day)).toEqual(['2026-11-12', '2026-11-13', '2026-11-14']);
+    expect(plan.filter((p) => p.kind === 'evento').map((p) => p.day).sort()).toEqual([
+      '2026-11-11', // cierre de registro de escuelas
+      '2026-11-12',
+      '2026-11-13',
+      '2026-11-14',
+      '2026-11-21', // segunda etapa
+      '2026-11-28', // inicio de capacitaciones
+    ]);
     expect(plan.some((p) => p.phase === 'avanzada')).toBe(true);
   });
 

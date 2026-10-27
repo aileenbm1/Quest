@@ -3,6 +3,11 @@ import { addDays, daysBetween } from './dates';
 /** Primera etapa según la convocatoria 2026–2027 (12 al 14 de noviembre de 2026). */
 export const FIRST_STAGE_START = '2026-11-12';
 export const FIRST_STAGE_END = '2026-11-14';
+/** Otras fechas de la convocatoria 2026–2027. */
+export const REGISTRATION_DEADLINE = '2026-11-11';
+export const SECOND_STAGE_DAY = '2026-11-21';
+export const TRAINING_START = '2026-11-28';
+export const TRAINING_END = '2027-01-17';
 
 export type PlanKind =
   | 'diagnostico'
@@ -106,6 +111,16 @@ export function generatePlan(
     }
   }
 
+  if (daysBetween(startDay, REGISTRATION_DEADLINE) >= 0) {
+    push(
+      REGISTRATION_DEADLINE,
+      'evento',
+      'Último día para que tu escuela se registre en la OIEG. Pregunta a tu maestra o maestro si ya lo hizo',
+      0,
+      'primera_etapa',
+    );
+  }
+
   const stageEnd = daysBetween(startDay, FIRST_STAGE_END);
   if (stageEnd >= 0) {
     for (let d = Math.max(0, daysToStage); d <= stageEnd; d++) {
@@ -120,9 +135,31 @@ export function generatePlan(
   for (let w = 0; w < weeks; w++) {
     for (const dayOffset of [0, 2, 4]) {
       const day = addDays(advancedStart, w * 7 + dayOffset);
-      push(day, 'avanzado', ADVANCED_TOPICS[topic % ADVANCED_TOPICS.length]!, minutes, 'avanzada');
+      const title = ADVANCED_TOPICS[topic % ADVANCED_TOPICS.length]!;
+      // Antes de la segunda etapa solo se califica la respuesta final, así que se practica eso.
+      const beforeSecond = daysBetween(day, SECOND_STAGE_DAY) > 0 && daysBetween(startDay, day) >= 0;
+      push(day, 'avanzado', beforeSecond ? `Rumbo a la segunda etapa (respuestas abiertas): ${title}` : title, minutes, 'avanzada');
       topic += 1;
     }
+  }
+
+  if (daysBetween(startDay, SECOND_STAGE_DAY) >= 0) {
+    push(
+      SECOND_STAGE_DAY,
+      'evento',
+      'Segunda etapa de la OIEG: sábado de 9:00 a 11:00, en línea, preguntas abiertas (solo se califica la respuesta)',
+      0,
+      'avanzada',
+    );
+  }
+  if (daysBetween(startDay, TRAINING_START) >= 0) {
+    push(
+      TRAINING_START,
+      'evento',
+      'Inicio de las capacitaciones en línea de la tercera etapa (Microsoft Teams, hasta el 17 de enero de 2027)',
+      0,
+      'avanzada',
+    );
   }
   return items;
 }

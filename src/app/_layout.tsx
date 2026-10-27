@@ -46,6 +46,8 @@ function AppShell() {
           <Stack.Screen name="examen/[id]" options={{ title: 'Simulacro', gestureEnabled: false }} />
           <Stack.Screen name="resultado/[id]" options={{ title: 'Resultados' }} />
           <Stack.Screen name="plan" options={{ title: 'Plan de preparación' }} />
+          <Stack.Screen name="jugar/[juego]" options={{ title: 'Minijuego' }} />
+          <Stack.Screen name="reto-dia" options={{ title: 'Reto del día' }} />
         </Stack>
       </DatabaseProvider>
     </>

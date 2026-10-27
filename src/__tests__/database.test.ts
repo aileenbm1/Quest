@@ -46,7 +46,7 @@ describe('inicialización de la base de datos', () => {
     const db = openNodeDb();
     const result = await initDatabase(db, { now: NOW });
     expect(result.schemaVersion).toBe(LATEST_SCHEMA_VERSION);
-    expect(result.migrationsApplied).toEqual([1, 2]);
+    expect(result.migrationsApplied).toEqual([1, 2, 3, 4]);
     expect(result.contentSeeded).toBe(true);
     const status = await getContentStatus(db);
     expect(status.total).toBe(ALL_QUESTIONS.length);
@@ -67,7 +67,7 @@ describe('inicialización de la base de datos', () => {
               (SELECT COUNT(*) FROM schema_migrations) AS m`,
     );
     const expectedOptions = ALL_QUESTIONS.reduce((n, q) => n + (q.options?.length ?? 0), 0);
-    expect(counts).toEqual({ q: ALL_QUESTIONS.length, o: expectedOptions, m: 2 });
+    expect(counts).toEqual({ q: ALL_QUESTIONS.length, o: expectedOptions, m: 4 });
     db.close();
   });
 

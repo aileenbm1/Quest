@@ -29,6 +29,10 @@ export default function TabLayout() {
         options={{ title: 'Academia', tabBarIcon: ({ focused, size }) => <TabIcon name="school" size={size} focused={focused} /> }}
       />
       <Tabs.Screen
+        name="juegos"
+        options={{ title: 'Juegos', tabBarIcon: ({ focused, size }) => <TabIcon name="game-controller" size={size} focused={focused} /> }}
+      />
+      <Tabs.Screen
         name="simulador"
         options={{ title: 'Simulador', tabBarIcon: ({ focused, size }) => <TabIcon name="timer" size={size} focused={focused} /> }}
       />

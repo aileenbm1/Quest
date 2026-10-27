@@ -150,6 +150,40 @@ export const MIGRATIONS: Migration[] = [
       )`,
     ],
   },
+  {
+    version: 3,
+    name: 'minijuegos',
+    statements: [
+      `CREATE TABLE game_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        game TEXT NOT NULL CHECK (game IN ('numero', 'laberinto', 'ritmo', 'cazabugs')),
+        level INTEGER NOT NULL CHECK (level BETWEEN 1 AND 10),
+        score INTEGER NOT NULL CHECK (score >= 0),
+        max_score INTEGER NOT NULL CHECK (max_score > 0),
+        time_ms INTEGER NOT NULL DEFAULT 0 CHECK (time_ms >= 0),
+        xp INTEGER NOT NULL DEFAULT 0 CHECK (xp >= 0),
+        created_at TEXT NOT NULL,
+        day TEXT NOT NULL
+      )`,
+      `CREATE INDEX idx_game_sessions_game ON game_sessions(game, id)`,
+      `CREATE INDEX idx_game_sessions_day ON game_sessions(day)`,
+    ],
+  },
+  {
+    version: 4,
+    name: 'reto_del_dia',
+    statements: [
+      `CREATE TABLE daily_challenges (
+        day TEXT PRIMARY KEY NOT NULL,
+        score INTEGER NOT NULL CHECK (score >= 0),
+        max_score INTEGER NOT NULL CHECK (max_score > 0),
+        time_ms INTEGER NOT NULL DEFAULT 0 CHECK (time_ms >= 0),
+        xp INTEGER NOT NULL DEFAULT 0 CHECK (xp >= 0),
+        plays INTEGER NOT NULL DEFAULT 1 CHECK (plays >= 1),
+        completed_at TEXT NOT NULL
+      )`,
+    ],
+  },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS[MIGRATIONS.length - 1]!.version;

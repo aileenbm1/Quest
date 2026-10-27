@@ -214,9 +214,14 @@ export async function getOverview(db: Db, now: Date = new Date()): Promise<Overv
   const lessons = await db.getFirstAsync<{ n: number }>(
     `SELECT COUNT(*) AS n FROM lesson_progress WHERE status = 'completada'`,
   );
-  const days = await db.getAllAsync<{ day: string }>('SELECT DISTINCT day FROM attempts');
+  const days = await db.getAllAsync<{ day: string }>(
+    'SELECT day FROM attempts UNION SELECT day FROM game_sessions UNION SELECT day FROM daily_challenges',
+  );
+  const gameXpTotal =
+    ((await db.getFirstAsync<{ xp: number | null }>('SELECT SUM(xp) AS xp FROM game_sessions'))?.xp ?? 0) +
+    ((await db.getFirstAsync<{ xp: number | null }>('SELECT SUM(xp) AS xp FROM daily_challenges'))?.xp ?? 0);
   const today = toLocalDay(now);
-  const xp = totals?.xp ?? 0;
+  const xp = (totals?.xp ?? 0) + gameXpTotal;
   const total = totals?.total ?? 0;
   const correct = totals?.correct ?? 0;
   const totalQuestions = questions?.n ?? 0;
@@ -356,6 +361,8 @@ export async function resetProgress(db: Db): Promise<void> {
     await db.runAsync('DELETE FROM exam_answers');
     await db.runAsync('DELETE FROM exam_sessions');
     await db.runAsync('DELETE FROM attempts');
+    await db.runAsync('DELETE FROM game_sessions');
+    await db.runAsync('DELETE FROM daily_challenges');
     await db.runAsync('DELETE FROM lesson_progress');
     await db.runAsync('DELETE FROM review_queue');
     await db.runAsync('DELETE FROM training_plan');
