@@ -1,7 +1,7 @@
 name: APK Android
 
-# Compila la APK en cada cambio de la app y la publica en Cloudflare R2,
-# desde donde el Worker la entrega en <tu-dominio>/descargar.
+# Compila la APK en cada cambio de la app y la deja como artefacto de la
+# ejecución. Subirla a Cloudflare R2 se hace a mano (ver docs/COMPILAR_APK.md).
 on:
   push:
     branches: [main]
@@ -21,8 +21,6 @@ jobs:
     env:
       CI: 1
       EXPO_NO_TELEMETRY: 1
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -67,16 +65,3 @@ jobs:
           name: oieg-quest-apk
           path: dist/
           retention-days: 30
-
-      - name: Publicar en Cloudflare R2
-        if: github.ref == 'refs/heads/main' && env.CLOUDFLARE_API_TOKEN != ''
-        run: |
-          npx wrangler r2 bucket info oieg-quest-apk > /dev/null 2>&1 || npx wrangler r2 bucket create oieg-quest-apk
-          npx wrangler r2 object put oieg-quest-apk/oieg-quest.apk --file dist/oieg-quest.apk \
-            --content-type application/vnd.android.package-archive --remote
-          npx wrangler r2 object put oieg-quest-apk/apk-info.json --file dist/apk-info.json \
-            --content-type application/json --remote
-
-      - name: Aviso si faltan los secretos de Cloudflare
-        if: github.ref == 'refs/heads/main' && env.CLOUDFLARE_API_TOKEN == ''
-        run: echo "::warning::Faltan los secretos CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID; la APK quedó solo como artefacto de esta ejecución."
