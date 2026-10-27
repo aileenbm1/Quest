@@ -50,3 +50,22 @@ o bien `npx eas-cli@latest build -p android --profile preview --local`.
 ## Variables de entorno
 
 No se requiere ninguna. Para compilar en CI con EAS, define `EXPO_TOKEN` (token personal de Expo) como secreto del CI.
+
+## Descarga directa con un link (Cloudflare)
+
+La APK se compila sola en GitHub Actions (`.github/workflows/apk.yml`) en cada push a `main`, se sube a un bucket de R2 y el Worker `quest` (`wrangler.jsonc`, `cloudflare/worker.ts`) la sirve en:
+
+- `https://<tu-dominio>/` página de descarga con instrucciones
+- `https://<tu-dominio>/descargar` descarga directa del `.apk`
+- `https://<tu-dominio>/apk-info` versión, tamaño y fecha en JSON
+
+Configuración (una sola vez):
+
+1. En Cloudflare, **My Profile → API Tokens → Create Token** con permiso *Workers R2 Storage: Edit*. Copia también tu *Account ID*.
+2. En GitHub, **Settings → Secrets and variables → Actions**, crea `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`.
+
+El workflow crea el bucket R2 `oieg-quest-apk` la primera vez si todavía no existe.
+
+Sin esos secretos el workflow igual compila la APK y la deja como *artifact* descargable en la pestaña Actions, pero no la publica en el link.
+
+La APK de este flujo se firma con la llave de depuración de la plantilla de Expo: sirve para instalarla directamente, no para Google Play.
