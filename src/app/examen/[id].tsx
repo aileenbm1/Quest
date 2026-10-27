@@ -1,10 +1,11 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ExamTimerBadge } from '@/components/ExamTimer';
 import { AnswerInput } from '@/components/question/AnswerInput';
 import { QuestionStatement, SourceTags } from '@/components/question/QuestionStatement';
+import { confirmAction } from '@/components/confirm';
 import { Body, Button, Card, ErrorNotice, Loading, Screen } from '@/components/ui';
 import { EXAM_PRESETS } from '@/core/exam';
 import { isEmptyResponse } from '@/core/grading';
@@ -119,16 +120,16 @@ function ExamRunner({
   const unanswered = questions.length - answered;
 
   const confirmFinish = () => {
-    Alert.alert(
-      '¿Terminar el examen?',
-      unanswered > 0
-        ? `Te faltan ${unanswered} ${unanswered === 1 ? 'pregunta' : 'preguntas'} por contestar. Después de terminar no podrás cambiar tus respuestas.`
-        : 'Después de terminar no podrás cambiar tus respuestas.',
-      [
-        { text: 'Seguir respondiendo', style: 'cancel' },
-        { text: 'Terminar', style: 'destructive', onPress: () => void finish('finalizado') },
-      ],
-    );
+    confirmAction({
+      title: '¿Terminar el examen?',
+      message:
+        unanswered > 0
+          ? `Te faltan ${unanswered} ${unanswered === 1 ? 'pregunta' : 'preguntas'} por contestar. Después de terminar no podrás cambiar tus respuestas.`
+          : 'Después de terminar no podrás cambiar tus respuestas.',
+      cancelText: 'Seguir respondiendo',
+      confirmText: 'Terminar',
+      onConfirm: () => finish('finalizado'),
+    });
   };
 
   const question = questions[index];

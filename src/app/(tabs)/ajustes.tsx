@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
 import { useState } from 'react';
-import { Alert, Linking, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { confirmAction } from '@/components/confirm';
 import { Body, Button, Card, ErrorNotice, Loading, Screen, SectionTitle, Title } from '@/components/ui';
 import { DISCLAIMER, OFFICIAL_REFERENCES } from '@/content/sources';
 import { useDatabase } from '@/db/DatabaseProvider';
@@ -51,25 +52,20 @@ export default function Ajustes() {
   };
 
   const confirmReset = () => {
-    Alert.alert(
-      '¿Borrar todo tu progreso?',
-      'Se eliminarán tus respuestas, lecciones completadas, simulacros, insignias y plan. Esta acción no se puede deshacer.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Sí, borrar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await resetProgress(db);
-              setMessage('Tu progreso se reinició.');
-            } catch (e) {
-              setActionError(e);
-            }
-          },
-        },
-      ],
-    );
+    confirmAction({
+      title: '¿Borrar todo tu progreso?',
+      message: 'Se eliminarán tus respuestas, lecciones completadas, simulacros, insignias y plan. Esta acción no se puede deshacer.',
+      cancelText: 'Cancelar',
+      confirmText: 'Sí, borrar',
+      onConfirm: async () => {
+        try {
+          await resetProgress(db);
+          setMessage('Tu progreso se reinició.');
+        } catch (e) {
+          setActionError(e);
+        }
+      },
+    });
   };
 
   return (
