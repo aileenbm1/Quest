@@ -1,4 +1,4 @@
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { Share, StyleSheet, Text, View } from 'react-native';
 import { GAME_COMPONENTS } from '@/components/games/registry';
@@ -19,6 +19,7 @@ import { useAsyncData } from '@/hooks/useAsyncData';
 import { DAILY_GAMES, DAILY_LEVEL, dailySeed, formatDuration, pickDailyQuestion, shareMessage } from '@/games/daily';
 import { gameInfo } from '@/games/types';
 import { useTheme } from '@/theme/ThemeProvider';
+import { useGoBack } from '@/hooks/useGoBack';
 
 type Stage =
   | { kind: 'intro' }
@@ -28,7 +29,7 @@ type Stage =
 
 export default function RetoDiaScreen() {
   const db = useDb();
-  const router = useRouter();
+  const goBack = useGoBack('/juegos');
   const { colors } = useTheme();
   const [day] = useState(() => toLocalDay(new Date()));
   const [stage, setStage] = useState<Stage>({ kind: 'intro' });
@@ -160,7 +161,7 @@ export default function RetoDiaScreen() {
             Share.share({ message: shareMessage(day, score, maxScore, timeMs) }).catch(() => {});
           }}
         />
-        <Button label="Volver a los juegos" icon="game-controller" onPress={() => router.back()} />
+        <Button label="Volver a los juegos" icon="game-controller" onPress={goBack} />
       </Screen>
     );
   }

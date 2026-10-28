@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Mascot, MascotTip } from '@/components/Mascot';
@@ -17,13 +17,14 @@ import { getLessons } from '@/db/questions';
 import { setLastActivity } from '@/db/settings';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { useTheme } from '@/theme/ThemeProvider';
+import { useGoBack } from '@/hooks/useGoBack';
 
 export default function PracticaScreen() {
   const params = useLocalSearchParams<{ modo?: string; id?: string; nivel?: string }>();
   const mode = (params.modo as PracticeMode) in ACTIVITY ? (params.modo as PracticeMode) : 'reto';
   const level = params.nivel !== undefined ? Number(params.nivel) : undefined;
   const db = useDb();
-  const router = useRouter();
+  const goBack = useGoBack('/inicio');
 
   const { data, error, reload } = useAsyncData(async () => {
     const [questions, lessons] = await Promise.all([loadPracticeQuestions(db, mode, params.id, level), getLessons(db)]);
@@ -46,7 +47,7 @@ export default function PracticaScreen() {
               : 'No hay ejercicios disponibles aquí por ahora.'
           }
         />
-        <Button label="Volver" icon="arrow-back" variant="secondary" onPress={() => router.back()} />
+        <Button label="Volver" icon="arrow-back" variant="secondary" onPress={goBack} />
       </Screen>
     );
   }
@@ -65,7 +66,7 @@ function PracticeRunner({
   refId?: string;
 }) {
   const db = useDb();
-  const router = useRouter();
+  const goBack = useGoBack('/inicio');
   const { colors } = useTheme();
   const [index, setIndex] = useState(0);
   const [response, setResponse] = useState<string | null>(null);
@@ -161,7 +162,7 @@ function PracticeRunner({
           </Card>
         ) : null}
         {saveError ? <ErrorNotice error={saveError} /> : null}
-        <Button label="Terminar" icon="checkmark" onPress={() => router.back()} />
+        <Button label="Terminar" icon="checkmark" onPress={goBack} />
       </Screen>
     );
   }

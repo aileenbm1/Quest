@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GAME_COMPONENTS } from '@/components/games/registry';
@@ -10,6 +10,7 @@ import { formatDuration } from '@/games/daily';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { gameInfo, isGameId, type GameId, type GameOutcome } from '@/games/types';
 import { useTheme } from '@/theme/ThemeProvider';
+import { useGoBack } from '@/hooks/useGoBack';
 
 const HOW_TO: Record<GameId, string[]> = {
   laberinto: [
@@ -42,7 +43,7 @@ type Stage =
 export default function JugarScreen() {
   const { juego } = useLocalSearchParams<{ juego: string }>();
   const db = useDb();
-  const router = useRouter();
+  const goBack = useGoBack('/juegos');
   const { colors } = useTheme();
   const valid = isGameId(juego);
   const [stage, setStage] = useState<Stage>({ kind: 'intro' });
@@ -65,7 +66,7 @@ export default function JugarScreen() {
     return (
       <Screen edges={[]}>
         <ErrorNotice error={new Error('Ese juego no existe.')} />
-        <Button label="Volver" icon="arrow-back" variant="secondary" onPress={() => router.back()} />
+        <Button label="Volver" icon="arrow-back" variant="secondary" onPress={goBack} />
       </Screen>
     );
   }
@@ -122,7 +123,7 @@ export default function JugarScreen() {
           </View>
           {saveError ? <ErrorNotice error={saveError} /> : null}
           <Button label="Jugar otra vez" icon="refresh" onPress={() => begin(stage.outcome.level)} />
-          <Button label="Volver a los juegos" icon="game-controller" variant="secondary" onPress={() => router.back()} />
+          <Button label="Volver a los juegos" icon="game-controller" variant="secondary" onPress={goBack} />
         </>
       )}
     </Screen>
