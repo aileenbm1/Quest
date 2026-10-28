@@ -184,6 +184,16 @@ export const MIGRATIONS: Migration[] = [
       )`,
     ],
   },
+  {
+    version: 5,
+    name: 'camino_y_variantes',
+    statements: [
+      // Ejercicios del nivel 0 «Aprender jugando».
+      `ALTER TABLE questions ADD COLUMN starter INTEGER NOT NULL DEFAULT 0`,
+      // Semilla de la variante que vio el estudiante (otros números y opciones revueltas).
+      `ALTER TABLE exam_answers ADD COLUMN variant_seed INTEGER`,
+    ],
+  },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS[MIGRATIONS.length - 1]!.version;

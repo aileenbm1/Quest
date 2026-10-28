@@ -19,18 +19,19 @@ import { useAsyncData } from '@/hooks/useAsyncData';
 import { useTheme } from '@/theme/ThemeProvider';
 
 export default function PracticaScreen() {
-  const params = useLocalSearchParams<{ modo?: string; id?: string }>();
+  const params = useLocalSearchParams<{ modo?: string; id?: string; nivel?: string }>();
   const mode = (params.modo as PracticeMode) in ACTIVITY ? (params.modo as PracticeMode) : 'reto';
+  const level = params.nivel !== undefined ? Number(params.nivel) : undefined;
   const db = useDb();
   const router = useRouter();
 
   const { data, error, reload } = useAsyncData(async () => {
-    const [questions, lessons] = await Promise.all([loadPracticeQuestions(db, mode, params.id), getLessons(db)]);
+    const [questions, lessons] = await Promise.all([loadPracticeQuestions(db, mode, params.id, level), getLessons(db)]);
     if (mode !== 'repaso' && mode !== 'fallados') {
-      await setLastActivity(db, { label: TITLES[mode], pathname: '/practica', params: { modo: mode, ...(params.id ? { id: params.id } : {}) } });
+      await setLastActivity(db, { label: TITLES[mode], pathname: '/practica', params: { modo: mode, ...(params.id ? { id: params.id } : {}), ...(params.nivel ? { nivel: params.nivel } : {}) } });
     }
     return { questions, lessons: new Map(lessons.map((l) => [l.id, l])) };
-  }, `${mode}:${params.id ?? ''}`);
+  }, `${mode}:${params.id ?? ''}:${params.nivel ?? ''}`);
 
   if (error) return <Screen edges={[]}><ErrorNotice error={error} onRetry={reload} /></Screen>;
   if (!data) return <Loading />;
@@ -49,7 +50,7 @@ export default function PracticaScreen() {
       </Screen>
     );
   }
-  return <PracticeRunner questions={data.questions} lessons={data.lessons} mode={mode} refId={params.id} key={`${mode}-${params.id}`} />;
+  return <PracticeRunner questions={data.questions} lessons={data.lessons} mode={mode} refId={params.id} key={`${mode}-${params.id}-${params.nivel ?? ''}`} />;
 }
 
 function PracticeRunner({

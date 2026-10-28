@@ -1,5 +1,7 @@
 // Tipos de dominio compartidos por el contenido, la base de datos y la interfaz.
 
+import type { Visual } from './visuals';
+
 export type CategoryId =
   | 'patrones'
   | 'logica'
@@ -99,6 +101,13 @@ export interface Question {
   verification: VerificationStatus;
   origin: ContentOrigin;
   inDiagnostic?: boolean;
+  /** Ejercicio del nivel 0 «Aprender jugando»: muy fácil, para quien empieza desde cero. */
+  starter?: boolean;
+  /**
+   * Dibujo propio de una variante con otros números. Si no está, se usa el dibujo del
+   * ejercicio original; `null` significa que la variante no lleva dibujo.
+   */
+  visual?: Visual | null;
 }
 
 export interface Lesson {
@@ -130,6 +139,7 @@ export type GradeResult = 'correcta' | 'incorrecta' | 'vacia' | 'no_verificable'
 export type ActivityType = 'leccion' | 'practica' | 'repaso' | 'reto' | 'diagnostico' | 'simulacro';
 
 export const LEVEL_NAMES: Record<number, string> = {
+  0: 'Aprender jugando',
   1: 'Reconocer',
   2: 'Comprender',
   3: 'Aplicar',

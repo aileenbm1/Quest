@@ -63,4 +63,19 @@ La propia página de exámenes recomienda revisarlos todos porque algunos compar
 | Retos mixtos | 10 | Simulador de olimpiada |
 | **Total** | **80** | |
 
+Además, cada módulo empieza con 4 ejercicios del **nivel 0 «Aprender jugando»** (`src/content/questions/inicio.ts`, 24 en total): muy fáciles, casi todos con dibujo, para quien empieza desde cero. No entran a los simulacros.
+
+## Camino de niveles
+
+En cada módulo los ejercicios se agrupan por nivel (0 a 5). Un nivel se completa al resolver bien al menos el 60 % de sus ejercicios, y solo entonces se abre el siguiente. Las lecciones se muestran dentro de su nivel y se abren con él. La lógica está en `src/core/path.ts`.
+
+## Simulacros que cambian
+
+Para que no se aprendan las respuestas de memoria:
+
+- Cada simulacro prefiere preguntas que no salieron en los últimos 3 del mismo tipo.
+- El orden de las preguntas y el de las opciones cambia en cada intento. Verdadero/falso, cuadrículas y «Paso 1, 2…» conservan su orden, y opciones como «No se puede saber» quedan al final.
+- 23 ejercicios tienen variantes con otros números (`src/content/variants.ts`). La respuesta de cada variante se calcula con código y `src/__tests__/variants.test.ts` la vuelve a calcular por otro camino con 300 semillas.
+- La semilla de cada pregunta se guarda en el simulacro, así se califica exactamente la versión que vio el estudiante.
+
 Cada ejercicio tiene id único, enunciado, categoría, dificultad (1–5), tipo, opciones si aplica, respuesta verificada, explicación, pistas progresivas, tiempo estimado, fuente, estado de verificación y origen. Las respuestas con cálculo se recalculan con código en `src/__tests__/content.test.ts`.

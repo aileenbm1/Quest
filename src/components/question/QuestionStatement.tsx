@@ -25,7 +25,7 @@ export function SourceTags({ question }: { question: Question }) {
 export function QuestionStatement({ question, showMeta = true }: { question: Question; showMeta?: boolean }) {
   const { colors } = useTheme();
   const d = question.data;
-  const visual = getVisual(question.id);
+  const visual = question.visual !== undefined ? question.visual : getVisual(question.id);
   return (
     <View style={styles.wrap}>
       {showMeta ? (
