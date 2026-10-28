@@ -1,13 +1,16 @@
+import { isLevelOpen } from '@/core/path';
 import type { ActivityType, Question } from '@/core/types';
+import { getModulePath } from './path';
 import { getDueReviewQuestions, getFailedQuestions, getRecommendedChallenge, getRecommendedDifficulty } from './progress';
 import { getModule, queryQuestions } from './questions';
 import type { Db } from './types';
 
-export type PracticeMode = 'leccion' | 'modulo' | 'fallados' | 'repaso' | 'reto';
+export type PracticeMode = 'leccion' | 'modulo' | 'nivel' | 'fallados' | 'repaso' | 'reto';
 
 export const ACTIVITY: Record<PracticeMode, ActivityType> = {
   leccion: 'leccion',
   modulo: 'practica',
+  nivel: 'practica',
   fallados: 'repaso',
   repaso: 'repaso',
   reto: 'reto',
@@ -16,12 +19,13 @@ export const ACTIVITY: Record<PracticeMode, ActivityType> = {
 export const PRACTICE_TITLES: Record<PracticeMode, string> = {
   leccion: 'Práctica de la lección',
   modulo: 'Práctica del módulo',
+  nivel: 'Práctica del nivel',
   fallados: 'Repetir fallados',
   repaso: 'Repaso de errores',
   reto: 'Reto recomendado',
 };
 
-export async function loadPracticeQuestions(db: Db, mode: PracticeMode, id?: string): Promise<Question[]> {
+export async function loadPracticeQuestions(db: Db, mode: PracticeMode, id?: string, level?: number): Promise<Question[]> {
   switch (mode) {
     case 'leccion':
       return queryQuestions(db, 'q.lesson_id = ?', [id ?? '']);
@@ -38,6 +42,19 @@ export async function loadPracticeQuestions(db: Db, mode: PracticeMode, id?: str
          ABS(q.difficulty - ${level}), q.difficulty, q.id`,
       );
       return list.slice(0, 8).sort((a, b) => a.difficulty - b.difficulty);
+    }
+    case 'nivel': {
+      // Un nivel con candado no se puede practicar todavía.
+      const lv = level ?? 0;
+      if (!isLevelOpen(await getModulePath(db, id ?? ''), lv)) return [];
+      const where = lv === 0 ? 'q.module_id = ? AND q.starter = 1' : 'q.module_id = ? AND q.starter = 0 AND q.difficulty = ?';
+      // Primero los que aún no resuelve bien.
+      return queryQuestions(
+        db,
+        where,
+        lv === 0 ? [id ?? ''] : [id ?? '', lv],
+        `(SELECT COUNT(*) FROM attempts a WHERE a.question_id = q.id AND a.result = 'correcta') > 0, q.id`,
+      );
     }
     case 'fallados':
       return getFailedQuestions(db, id);

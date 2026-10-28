@@ -6,16 +6,30 @@ import type { Question } from '@/core/types';
 const byId = (id: string) => ALL_QUESTIONS.find((q) => q.id === id)!;
 
 describe('banco de contenido', () => {
-  it('tiene entre 60 y 100 ejercicios originales con la distribución de diseño', () => {
-    expect(ORIGINAL_QUESTIONS.length).toBeGreaterThanOrEqual(60);
-    expect(ORIGINAL_QUESTIONS.length).toBeLessThanOrEqual(100);
-    const count = (c: Question['category']) => ORIGINAL_QUESTIONS.filter((q) => q.category === c).length;
+  it('tiene entre 60 y 100 ejercicios originales con la distribución de diseño, más el nivel 0', () => {
+    const main = ORIGINAL_QUESTIONS.filter((q) => !q.starter);
+    expect(main.length).toBeGreaterThanOrEqual(60);
+    expect(main.length).toBeLessThanOrEqual(100);
+    const count = (c: Question['category']) => main.filter((q) => q.category === c).length;
     expect(count('patrones')).toBe(15);
     expect(count('logica')).toBe(15);
     expect(count('algoritmos')).toBe(15);
     expect(count('matematicas')).toBe(15);
     expect(count('depuracion')).toBe(10);
     expect(count('mixtos')).toBe(10);
+  });
+
+  it('cada módulo tiene 4 ejercicios del nivel 0 «Aprender jugando», muy fáciles y sin lección', () => {
+    for (const m of MODULES) {
+      const starters = ORIGINAL_QUESTIONS.filter((q) => q.starter && q.moduleId === m.id);
+      expect(starters).toHaveLength(4);
+      for (const q of starters) {
+        expect(q.difficulty).toBe(1);
+        expect(q.lessonId).toBeNull();
+        expect(q.inDiagnostic).toBeFalsy();
+        expect(q.category).toBe(m.category);
+      }
+    }
   });
 
   it('no repite identificadores', () => {

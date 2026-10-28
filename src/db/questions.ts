@@ -18,6 +18,7 @@ interface QuestionRow {
   verification_status: string;
   origin: string;
   in_diagnostic: number;
+  starter: number;
 }
 
 interface OptionRow {
@@ -45,6 +46,7 @@ function rowToQuestion(row: QuestionRow, options: QuestionOption[]): Question {
     verification: row.verification_status as Question['verification'],
     origin: row.origin as Question['origin'],
     inDiagnostic: row.in_diagnostic === 1,
+    starter: row.starter === 1,
   };
 }
 

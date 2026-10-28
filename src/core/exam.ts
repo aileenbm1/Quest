@@ -56,14 +56,17 @@ export function shuffle<T>(items: T[], random: () => number): T[] {
 }
 
 /**
- * Selecciona preguntas para un simulacro: el mismo número por categoría,
- * ordenadas de menor a mayor dificultad. El diagnóstico usa las preguntas
- * marcadas para ello.
+ * Selecciona preguntas para un simulacro: el mismo número por categoría y en orden revuelto.
+ * Para que no se aprendan las respuestas de memoria, primero usa las que no salieron en los
+ * simulacros recientes (`recent`, del más nuevo al más viejo) y luego las que salieron hace más.
+ * Los ejercicios del nivel 0 no entran: son para aprender, no para el examen.
+ * El diagnóstico usa siempre las preguntas marcadas para ello, de menor a mayor dificultad.
  */
 export function pickExamQuestions(
   bank: Question[],
   kind: ExamKind,
   random: () => number = Math.random,
+  recent: string[][] = [],
 ): Question[] {
   const preset = EXAM_PRESETS[kind];
   if (kind === 'diagnostico') {
@@ -71,15 +74,20 @@ export function pickExamQuestions(
       .filter((q) => q.inDiagnostic)
       .sort((a, b) => a.difficulty - b.difficulty || a.id.localeCompare(b.id));
   }
+  // Cuántos simulacros hace que salió cada pregunta (0 = el último).
+  const lastSeen = new Map<string, number>();
+  recent.forEach((ids, age) => ids.forEach((id) => (lastSeen.has(id) ? null : lastSeen.set(id, age))));
+  const staleness = (q: Question) => lastSeen.get(q.id) ?? recent.length;
+
   const selected: Question[] = [];
   for (const category of CATEGORY_IDS) {
     const pool = shuffle(
-      bank.filter((q) => q.category === category),
+      bank.filter((q) => q.category === category && !q.starter),
       random,
-    );
+    ).sort((a, b) => staleness(b) - staleness(a));
     selected.push(...pool.slice(0, preset.questionsPerCategory));
   }
-  return selected.sort((a, b) => a.difficulty - b.difficulty || a.category.localeCompare(b.category));
+  return shuffle(selected, random);
 }
 
 export function categoriesInOrder(items: { category: CategoryId }[]): CategoryId[] {

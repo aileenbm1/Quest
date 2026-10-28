@@ -10,6 +10,7 @@ import {
   finalizeExam,
   getActiveExam,
   getExamAnswers,
+  getExamWithQuestions,
   saveExamAnswer,
   startExam,
 } from '@/db/exams';
@@ -31,6 +32,7 @@ import { getAllQuestions, getContentStatus, getQuestionsByIds } from '@/db/quest
 import { BUNDLED_CONTENT, seedContent } from '@/db/seed';
 import { getSetting, setSetting } from '@/db/settings';
 import { seededRandom } from '@/core/exam';
+import { canonicalResponse } from '@/core/grading';
 import { importOfficialQuestion } from '@/content/official/importer';
 import { openNodeDb, type TestDb } from '../../test-utils/nodeDb';
 
@@ -47,7 +49,7 @@ describe('inicialización de la base de datos', () => {
     const db = openNodeDb();
     const result = await initDatabase(db, { now: NOW });
     expect(result.schemaVersion).toBe(LATEST_SCHEMA_VERSION);
-    expect(result.migrationsApplied).toEqual([1, 2, 3, 4]);
+    expect(result.migrationsApplied).toEqual([1, 2, 3, 4, 5]);
     expect(result.contentSeeded).toBe(true);
     const status = await getContentStatus(db);
     expect(status.total).toBe(ALL_QUESTIONS.length);
@@ -68,7 +70,7 @@ describe('inicialización de la base de datos', () => {
               (SELECT COUNT(*) FROM schema_migrations) AS m`,
     );
     const expectedOptions = ALL_QUESTIONS.reduce((n, q) => n + (q.options?.length ?? 0), 0);
-    expect(counts).toEqual({ q: ALL_QUESTIONS.length, o: expectedOptions, m: 4 });
+    expect(counts).toEqual({ q: ALL_QUESTIONS.length, o: expectedOptions, m: 5 });
     db.close();
   });
 
@@ -181,7 +183,7 @@ describe('intentos, repaso y recomendaciones', () => {
     const m1 = (await getModuleProgress(db)).find((m) => m.moduleId === 'm1-patrones')!;
     expect(m1.solved).toBe(1);
     expect(m1.attempts).toBe(2);
-    expect(m1.totalQuestions).toBe(15);
+    expect(m1.totalQuestions).toBe(19); // 15 + 4 del nivel 0
     db.close();
   });
 
@@ -234,7 +236,9 @@ describe('simulador de examen', () => {
     await seedContent(db, { ...BUNDLED_CONTENT, questions: [...BUNDLED_CONTENT.questions, pending] }, { force: true });
     const questions = await getQuestionsByIds(db, ['pat-01', 'log-01', 'ofi-prueba-01', 'mat-06']);
     const id = await createExamSession(db, 'corto', questions, 20 * 60, NOW);
-    await saveExamAnswer(db, id, 0, '10', NOW); // correcta
+    // pat-01 sale con otros números: la respuesta correcta es la de la variante guardada.
+    const shown = (await getExamWithQuestions(db, id))!.questions[0]!;
+    await saveExamAnswer(db, id, 0, canonicalResponse(shown.answer), NOW); // correcta
     await saveExamAnswer(db, id, 1, 'f', NOW); // incorrecta
     await saveExamAnswer(db, id, 2, 'Lleno la de 5…', NOW); // abierta: no verificable
     // posición 3 sin respuesta → vacía

@@ -5,15 +5,17 @@ import { importOfficialQuestion, type OfficialQuestionInput } from './official/i
 import officialRaw from './official/official-questions.json';
 import { ALGORITMOS } from './questions/algoritmos';
 import { DEPURACION } from './questions/depuracion';
+import { INICIO } from './questions/inicio';
 import { LOGICA } from './questions/logica';
 import { MATEMATICAS } from './questions/matematicas';
 import { MIXTOS } from './questions/mixtos';
 import { PATRONES } from './questions/patrones';
 
 /** Se incrementa cada vez que cambia el contenido empaquetado. */
-export const CONTENT_VERSION = 2;
+export const CONTENT_VERSION = 3;
 
 export const ORIGINAL_QUESTIONS: Question[] = [
+  ...INICIO,
   ...PATRONES,
   ...LOGICA,
   ...ALGORITMOS,

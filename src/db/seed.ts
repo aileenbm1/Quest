@@ -69,15 +69,15 @@ export async function seedContent(
     for (const q of bundle.questions) {
       await db.runAsync(
         `INSERT INTO questions (id, module_id, lesson_id, category, difficulty, type, prompt, data_json, answer_json,
-           explanation, hints_json, estimated_seconds, source, verification_status, origin, in_diagnostic, active)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+           explanation, hints_json, estimated_seconds, source, verification_status, origin, in_diagnostic, starter, active)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
          ON CONFLICT(id) DO UPDATE SET module_id = excluded.module_id, lesson_id = excluded.lesson_id,
            category = excluded.category, difficulty = excluded.difficulty, type = excluded.type,
            prompt = excluded.prompt, data_json = excluded.data_json, answer_json = excluded.answer_json,
            explanation = excluded.explanation, hints_json = excluded.hints_json,
            estimated_seconds = excluded.estimated_seconds, source = excluded.source,
            verification_status = excluded.verification_status, origin = excluded.origin,
-           in_diagnostic = excluded.in_diagnostic, active = 1`,
+           in_diagnostic = excluded.in_diagnostic, starter = excluded.starter, active = 1`,
         [
           q.id,
           q.moduleId,
@@ -95,6 +95,7 @@ export async function seedContent(
           q.verification,
           q.origin,
           q.inDiagnostic ? 1 : 0,
+          q.starter ? 1 : 0,
         ],
       );
       await db.runAsync('DELETE FROM question_options WHERE question_id = ?', [q.id]);

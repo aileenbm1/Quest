@@ -256,6 +256,61 @@ export const VISUALS: Record<string, Visual> = {
     alt: 'Dos jarras vacías sin marcas: una de 3 litros y otra de 5 litros.',
   },
 
+  // ── Nivel 0: Aprender jugando ─────────────────────────────────────
+  'ini-pat-1': numberTiles(['1', '2', '3', '4', '?'], 'Cinco casillas: 1, 2, 3, 4 y una casilla vacía por completar.'),
+  'ini-pat-2': {
+    kind: 'shapes',
+    items: ['circle', 'square', 'circle', 'square', 'circle', 'square'],
+    unknown: '7',
+    alt: 'Figuras que se alternan: círculo, cuadrado, círculo, cuadrado, círculo, cuadrado. Al final hay una casilla con la pregunta: qué figura va en el lugar 7.',
+  },
+  'ini-pat-3': numberTiles(['10', '20', '30', '40', '?'], 'Cinco casillas: 10, 20, 30, 40 y una casilla vacía por completar.'),
+  'ini-pat-4': numberTiles(['A', 'B', 'C', 'D', '?'], 'Letras en casillas: A, B, C, D y una casilla vacía por completar.'),
+  'ini-log-4': {
+    kind: 'table',
+    head: ['Caja', 'Lo que sabemos'],
+    rows: [
+      ['Roja', 'Aquí NO está la pelota'],
+      ['Azul', '?'],
+    ],
+    alt: 'Tabla de dos cajas. En la roja no está la pelota; de la azul no sabemos nada todavía.',
+  },
+  'ini-alg-3': {
+    kind: 'tiles',
+    items: ['→', '→', '→'],
+    alt: 'Tres flechas hacia la derecha, una tras otra: son las instrucciones que recibe Bit.',
+    caption: 'Cada flecha mueve a Bit una casilla.',
+  },
+  'ini-alg-4': {
+    kind: 'flow',
+    alt: 'Diagrama de flujo: un ciclo que repite 3 veces el paso aplaudir. Luego termina.',
+    nodes: [
+      { t: 'loop', text: 'Repite 3 veces', body: [{ t: 'step', text: 'aplaudir' }] },
+      { t: 'end', text: 'Fin' },
+    ],
+  },
+  'ini-mat-2': {
+    kind: 'towers',
+    figures: [2, 2, 2],
+    alt: 'Tres torres iguales hechas de bloques de colores, cada una con 2 bloques.',
+  },
+  'ini-mat-4': {
+    kind: 'pie',
+    slices: 8,
+    alt: 'Una pizza redonda entera, dividida en 8 rebanadas del mismo tamaño.',
+  },
+  'ini-dep-2': {
+    kind: 'bulbs',
+    states: '1011',
+    alt: 'Cuatro focos en fila: encendido, apagado, encendido, encendido.',
+    caption: '1 0 1 1',
+  },
+  'ini-mix-1': {
+    kind: 'clock',
+    time: '3:00',
+    alt: 'Un reloj con manecillas que marca las 3 en punto.',
+  },
+
   // ── Lecciones (ejemplos resueltos) ────────────────────────────────
   'l-pat-1': {
     kind: 'tiles',

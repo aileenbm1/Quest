@@ -1,8 +1,10 @@
+import { VARIANT_MAKERS } from '@/content/variants';
 import { pickExamQuestions, type ExamKind } from '@/core/exam';
 import { gradeAnswer } from '@/core/grading';
 import { computeScore, type ScoreSummary } from '@/core/scoring';
 import { isExpired } from '@/core/timer';
 import type { GradeResult, Question } from '@/core/types';
+import { materializeQuestion } from '@/core/variants';
 import { insertAttempt } from './progress';
 import { getAllQuestions, getQuestionsByIds } from './questions';
 import type { Db } from './types';
@@ -27,7 +29,12 @@ export interface ExamAnswer {
   response: string | null;
   result: GradeResult | null;
   answeredAt: string | null;
+  /** Semilla de la variante que se mostró; `null` en simulacros anteriores a las variantes. */
+  variantSeed: number | null;
 }
+
+/** Cuántos simulacros recientes se revisan para no repetir preguntas. */
+const RECENT_EXAMS = 3;
 
 interface SessionRow {
   id: number;
@@ -61,6 +68,7 @@ export async function createExamSession(
   questions: Question[],
   durationSeconds: number | null,
   now: Date = new Date(),
+  random: () => number = Math.random,
 ): Promise<number> {
   if (questions.length === 0) throw new Error('No hay preguntas disponibles para el simulacro.');
   let id = 0;
@@ -71,10 +79,13 @@ export async function createExamSession(
     );
     id = res.lastInsertRowId;
     for (const [position, q] of questions.entries()) {
-      await db.runAsync('INSERT INTO exam_answers (session_id, position, question_id) VALUES (?, ?, ?)', [
+      // Cada pregunta guarda su semilla: con ella se rearma la misma variante al retomar o calificar.
+      const seed = 1 + Math.floor(random() * 2_147_483_646);
+      await db.runAsync('INSERT INTO exam_answers (session_id, position, question_id, variant_seed) VALUES (?, ?, ?, ?)', [
         id,
         position,
         q.id,
+        seed,
       ]);
     }
   });
@@ -90,7 +101,22 @@ export async function startExam(
   random: () => number = Math.random,
 ): Promise<number> {
   const bank = await getAllQuestions(db);
-  return createExamSession(db, kind, pickExamQuestions(bank, kind, random), durationSeconds, now);
+  const recent = kind === 'diagnostico' ? [] : await getRecentExamQuestionIds(db, kind, RECENT_EXAMS);
+  return createExamSession(db, kind, pickExamQuestions(bank, kind, random, recent), durationSeconds, now, random);
+}
+
+/** Preguntas de los últimos simulacros de un tipo, del más nuevo al más viejo. */
+export async function getRecentExamQuestionIds(db: Db, kind: ExamKind, limit: number): Promise<string[][]> {
+  const sessions = await db.getAllAsync<{ id: number }>(
+    'SELECT id FROM exam_sessions WHERE kind = ? ORDER BY started_at DESC, id DESC LIMIT ?',
+    [kind, limit],
+  );
+  const result: string[][] = [];
+  for (const s of sessions) {
+    const rows = await db.getAllAsync<{ question_id: string }>('SELECT question_id FROM exam_answers WHERE session_id = ?', [s.id]);
+    result.push(rows.map((r) => r.question_id));
+  }
+  return result;
 }
 
 export async function getExamSession(db: Db, id: number): Promise<ExamSession | null> {
@@ -105,6 +131,7 @@ export async function getExamAnswers(db: Db, sessionId: number): Promise<ExamAns
     response: string | null;
     result: string | null;
     answered_at: string | null;
+    variant_seed: number | null;
   }>('SELECT * FROM exam_answers WHERE session_id = ? ORDER BY position', [sessionId]);
   return rows.map((r) => ({
     position: r.position,
@@ -112,6 +139,7 @@ export async function getExamAnswers(db: Db, sessionId: number): Promise<ExamAns
     response: r.response,
     result: r.result as GradeResult | null,
     answeredAt: r.answered_at,
+    variantSeed: r.variant_seed,
   }));
 }
 
@@ -119,10 +147,16 @@ export async function getExamWithQuestions(db: Db, sessionId: number) {
   const session = await getExamSession(db, sessionId);
   if (!session) return null;
   const answers = await getExamAnswers(db, sessionId);
-  const questions = await getQuestionsByIds(
+  const base = await getQuestionsByIds(
     db,
     answers.map((a) => a.questionId),
   );
+  const byId = new Map(base.map((q) => [q.id, q]));
+  // Cada pregunta, tal como la vio el estudiante (sus números y el orden de sus opciones).
+  const questions = answers.flatMap((a) => {
+    const q = byId.get(a.questionId);
+    return q ? [materializeQuestion(q, a.variantSeed, VARIANT_MAKERS)] : [];
+  });
   return { session, answers, questions };
 }
 

@@ -11,7 +11,7 @@ jest.mock('@/db/expoDb', () => ({
 jest.setTimeout(30000);
 
 describe('navegación principal (app completa con base de datos real)', () => {
-  it('Bienvenida → Inicio → Academia → Módulo → Lección', async () => {
+  it('Bienvenida → Inicio → Academia → Módulo → Práctica del nivel 0', async () => {
     await renderRouter('./src/app', { initialUrl: '/' });
 
     expect(await screen.findByText('OIEG Quest')).toBeTruthy();
@@ -28,12 +28,16 @@ describe('navegación principal (app completa con base de datos real)', () => {
     expect(screen).toHavePathname('/academia');
 
     await fireEvent.press(screen.getByRole('button', { name: 'Módulo 1: Detectives de patrones' }));
-    expect(await screen.findByText('Lecciones')).toBeTruthy();
+    expect(await screen.findByText('Tu camino')).toBeTruthy();
     expect(screen).toHavePathname('/modulo/m1-patrones');
+    // Al empezar solo está abierto el nivel 0; la lección del nivel 1 tiene candado.
+    expect(screen.getByText('Nivel 0 · Aprender jugando')).toBeTruthy();
+    expect(screen.getAllByText('Con candado').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: /Lección: Secuencias numéricas/ })).toBeNull();
 
-    await fireEvent.press(screen.getByRole('button', { name: '1. Secuencias numéricas' }));
-    expect(await screen.findByText('La idea clave')).toBeTruthy();
-    expect(screen).toHavePathname('/leccion/l-pat-1');
+    await fireEvent.press(screen.getByRole('button', { name: 'Practicar este nivel' }));
+    expect(await screen.findByText('Cuenta y completa: 1, 2, 3, 4, __')).toBeTruthy();
+    expect(screen).toHavePathname('/practica');
   });
 
   it('las cinco pestañas se pueden recorrer', async () => {
